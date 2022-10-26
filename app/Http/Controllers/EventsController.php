@@ -8,10 +8,12 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Date;
+use Throwable;
 
 class EventsController extends BaseController
 {
-    public function getWarmupEvents() {
+    public function getWarmupEvents()
+    {
         return Event::all();
     }
 
@@ -100,8 +102,15 @@ class EventsController extends BaseController
     ]
      */
 
-    public function getEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 1');
+    public function getEventsWithWorkshops()
+    {
+        try {
+            $eventsWithWorkshops = Event::with('workshops')->get();
+            return response()->json($eventsWithWorkshops, 200);
+        } catch (Throwable $e) {
+            $this->notifyError("{$e->getMessage()}\n{$e->getTraceAsString()}");
+            return 1;
+        }
     }
 
 
@@ -178,7 +187,18 @@ class EventsController extends BaseController
     ```
      */
 
-    public function getFutureEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 2');
+    public function getFutureEventsWithWorkshops()
+    {
+        try {
+            $events = Event::with('workshops', function ($q) {
+                return $q->min('id')->whereNull('start');
+            })->pluck('id');
+            $eventsWithWorkshops = Event::with('workshops')->whereIn('id', $events)->get();
+
+            return response()->json($eventsWithWorkshops, 200);
+        } catch (Throwable $e) {
+            $this->notifyError("{$e->getMessage()}\n{$e->getTraceAsString()}");
+            return 1;
+        }
     }
 }

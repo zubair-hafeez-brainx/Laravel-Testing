@@ -3,8 +3,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use App\Models\MenuItem;
 use Illuminate\Routing\Controller as BaseController;
+use Throwable;
 
 class MenuController extends BaseController
 {
@@ -93,6 +95,13 @@ class MenuController extends BaseController
      */
 
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+
+        try {
+            $eventsWithChildren = Event::with('children')->get();
+            return response()->json($eventsWithChildren, 200);
+        } catch (Throwable $e) {
+            $this->notifyError("{$e->getMessage()}\n{$e->getTraceAsString()}");
+            return 1;
+        }
     }
 }
